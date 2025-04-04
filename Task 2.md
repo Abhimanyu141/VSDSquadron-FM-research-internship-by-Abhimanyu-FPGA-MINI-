@@ -1,138 +1,234 @@
-UART Loopback Mechanism Documentation
-Objective:
-Implement a UART loopback mechanism where transmitted data is immediately received back, facilitating testing of UART functionality on the VSDSquadron FPGA Mini board.
+# VSDSquadron_fpga_mini-FM-Internship_By-Arihaan_singh
+The VSDSquadron FPGA Mini (FM) is a compact and low-cost development board designed for FPGA prototyping and embedded system projects. This board provides a seamless hardware development experience with an integrated programmer, versatile GPIO access, and onboard memory, making it ideal for students, hobbyists, and developers exploring FPGA-based designs. [(Source)](https://www.vlsisystemdesign.com/vsdsquadronfm/)
+## Task 2 Implementing a UART loopback
+### Step 1: Understanding the Verilog code
+### UART Loopback Overview
+**UART (Universal Asynchronous Receiver-Transmitter)** is a hardware communication protocol used for serial communication between devices. It operates using two primary data lines:
 
-1. Study the Existing Code
-The project involves configuring the UART interface on the FPGA to create a loopback. This means the data transmitted from the FPGA's TX pin will be immediately received back on the RX pin, helping to verify the UART communication system. Here's an overview of the Verilog code that facilitates this:
+- **TX (Transmit) pin** – Sends data
+- **RX (Receive) pin** – Receives data
 
-Module Overview: The Verilog code instantiates a UART Transmitter and Receiver. The TX pin is internally connected to the RX pin to create a loopback for testing. This ensures any data sent through the TX pin is immediately received back on the RX pin for verification.
+A UART loopback mechanism is a test mode where transmitted data (TX) is directly fed back into the receive line (RX) of the same module. This allows verification of UART functionality without requiring an external device.
 
-Key Components:
+🔗 [View the existing code here](https://github.com/Arihaansingh/VSDSquadron_fpga_mini-FM-Internship_By-Arihaan_singh/blob/main/Task%202/uart_trx.v)
 
-UART Transmitter: Sends the data over the UART TX line.
+<details>
+  <summary><STRONG> Verilog module overview</STRONG></summary>
 
-UART Receiver: Receives data from the UART RX line.
+### Analysis:
 
-FIFO Buffers: Temporarily hold the transmitted and received data.
+### 🚀 Module Breakdown
+This module is designed to implement a UART loopback mechanism while also controlling an RGB LED based on the received data.
 
-Loopback Logic: The TX pin is connected to the RX pin within the FPGA for loopback functionality.
+### ⚙️ Main Components
+#### 🟢 Clock System
 
-2. Design Documentation
-Block Diagram:
-The block diagram below illustrates the main components involved in the UART loopback system:
+- Uses an Internal Oscillator (`SB_HFOSC`) to generate a clock signal.
 
-lua
-Copy
-  +------------------+         +-------------------+         +-----------------+
-  |                  |         |                   |         |                 |
-  | UART Transmitter |-------->| FPGA (Controller) |<------->| UART Receiver   |
-  |                  |         |                   |         |                 |
-  +------------------+         +-------------------+         +-----------------+
-                    TX ↔ RX loopback
-FPGA (Controller): The FPGA logic that controls both the transmitter and receiver.
+- Configured with `CLKHF_DIV = "0b10"` to divide the frequency.
 
-UART Transmitter: Module responsible for sending data via the TX pin.
+- Provides a timing reference for all operations.
 
-UART Receiver: Module that receives the data through the RX pin.
+#### 🔴 UART Loopback Communication
 
-TX ↔ RX Loopback: The loopback is created by internally connecting the TX pin to the RX pin.
+- TX (Transmit) and RX (Receive) pins are directly connected within the module.
 
-Circuit Diagram:
-The circuit diagram shows the hardware setup, highlighting the loopback connection between the TX and RX pins of the FPGA:
+- Any data sent to `uarttx` is immediately received at `uartrx`.
 
-pgsql
-Copy
-   +------------------+              +-------------------+
-   | FPGA             |              | Serial Terminal   |
-   |                  |              |                   |
-   |    TX <-----> RX | <-----------> |                   |
-   |                  |              |                   |
-   +------------------+              +-------------------+
-TX and RX Pin Connection: The TX pin from the FPGA is connected to the RX pin internally (or through external hardware, depending on the setup).
+- This feature is useful for self-testing UART functionality without needing another device.
 
-3. Implementation
-Set Up the Hardware:
-FPGA Connection: Connect the VSDSquadron FPGA Mini to your computer using the USB-C cable.
+#### 🔵 Frequency Counter
 
-TX and RX Loopback: Ensure that the TX and RX pins on the FPGA are connected correctly, either internally in the FPGA or through an external UART interface.
+- A 28-bit counter (`frequency_counter_i`) tracks oscillator cycles.
 
-If using an external UART-to-USB adapter, connect the TX pin of the FPGA to the RX pin of the adapter, and the RX pin of the FPGA to the TX pin of the adapter.
+- It increases on each positive edge of the clock signal.
 
-Serial Terminal: Set up a serial terminal on your computer (e.g., PuTTY, Tera Term, or screen) to communicate with the FPGA.
+- Helps generate timing signals for internal operations.
 
-Ensure the serial terminal settings (baud rate, data bits, stop bits, and parity) match the Verilog code configuration.
+#### 🟡 RGB LED Driver (SB_RGBA_DRV)
 
-Synthesize and Upload the Verilog Code:
-Compile the Verilog code using the provided Makefile in the project:
+- Controls three LEDs: Red (`led_red`), Green (`led_green`), and Blue (`led_blue`).
 
-Run make clean to clear any previous builds.
+- Uses PWM (Pulse Width Modulation) to adjust brightness levels.
 
-Run make build to compile the design.
+- UART data is directly mapped to LED brightness, allowing for visual feedback.
 
-Run sudo make flash to upload the compiled design to the FPGA.
+### 🔁 How It Works
+#### ✅ Receiving UART Data
 
-Ensure that the FPGA is programmed correctly and is ready for UART communication.
+- Data arrives at the `uartrx` pin.
 
-4. Testing and Verification
-Use a Serial Terminal:
-Configure Serial Terminal:
+- The same data is looped back to `uarttx` and sent out again.
 
-Open a serial terminal (e.g., PuTTY, Tera Term).
+- This confirms that UART transmission and reception are functioning correctly.
 
-Set the correct baud rate (e.g., 9600 baud), data bits (8), stop bits (1), and parity (none) as defined in the Verilog code.
+#### ✅ LED Control Based on UART Data
 
-Send Data:
+- The received data is used to control the intensity of the RGB LEDs.
 
-Send a test string (e.g., "Hello, World!") from the serial terminal to the FPGA.
+- PWM signals regulate LED brightness based on input values.
 
-The FPGA should immediately receive the same data and send it back to the serial terminal via the loopback mechanism.
+- All three LEDs change intensity together based on UART input.
 
-Verify Loopback:
-If the loopback mechanism is working correctly, the serial terminal will display the same data that was sent.
+#### ✅ Clock & Timing Management
 
-For example, if you send "Hello, World!" from the terminal, the terminal should display it again immediately, confirming that the transmitted data was received back.
+- The internal oscillator ensures stable timing.
 
-5. Documentation
-Compile the Final Report:
-The final documentation should include the following:
+- The frequency counter generates signals for PWM and UART operations.
 
-Block Diagram: Showing the architecture of the UART loopback system.
+  **This system efficiently tests UART communication while providing real-time LED feedback. 🌟**
+  </details>
+  
+  ## Step 2 Design documentetion
+    <details>
+       <summary><STRONG> Analysis</STRONG></summary>
+    <details>
+     <summary><STRONG> Block diagram illustrating the UART loopback architecture</STRONG></summary>
+![image](https://github.com/user-attachments/assets/36fe2f6a-95c5-4d34-b74c-1568dbffcdf5)
+  </details>
+  <details>
+     <summary><STRONG> Detailed circuit diagram showing connections between the FPGA and any peripheral devices used</STRONG></summary> 
+    
+![image](https://github.com/user-attachments/assets/eaff15eb-6a90-42c3-a44e-727a38fbbf84)
+  </details>
+  </details>
 
-Circuit Diagram: Displaying how the TX and RX pins are connected and how the FPGA communicates with the serial terminal.
+ ## Step 3 Implementation
+  <details>
+       <summary><STRONG> Transmitting code to FPGA Board</STRONG></summary>
+    
+### 🚀 UART Loopback on VSDSquadron FPGA
 
-Explanation of Verilog Code:
+**📁 Setting Up the Project**
 
-Describe the UART Transmitter and Receiver modules.
+1. Create the following files inside a new folder under VSDSquadron_FM. In this case, the folder is named uart_loopback:
 
-Explain the FIFO buffer mechanism and how data is transferred between the TX and RX pins.
+📜 Files to Create:
 
-Describe the loopback mechanism that connects TX to RX internally.
+- 🛠️ Makefile
+- 💾 uart_trx- Verilog
+- 🏗️ Verilog file
+- 📌 pcf (Pin Constraint File)
+- 📌top module
 
-Testing Results: Document the test procedure and provide screenshots or logs from the serial terminal showing data being received back after transmission.
+📌 Folder Structure:
 
-Video Demonstration:
-Record a short video demonstration showcasing the following:
+```
+VSDSquadron_FM/
+ ├── uart_loopback/
+ │   ├── Makefile
+ │   ├── uart_trx.v
+ │   ├── top.v
+ │   ├── uart_loopback.pcf
+```
 
-Connect the FPGA to the computer and open the serial terminal.
+### 🔌 Connecting the FPGA Board
 
-Send data from the serial terminal to the FPGA.
+1️⃣ Plug in the FPGA Board to your system via USB-C.
 
-Verify that the data is received back in the terminal, confirming the loopback functionality.
+2️⃣ Verify the Connection by running:
 
-Final Deliverables:
-GitHub Repository containing:
+```
+lsusb
+```
 
-The Verilog code.
+💡 If the board is detected, you should see:
 
-The block diagram and circuit diagram.
+```
+Future Technology Devices International
+```
 
-The final documentation (as described above).
+### 🛠️ Building & Flashing the Code
 
-Video Demonstration showing the UART loopback functionality in action.
+🔹 Navigate to the Folder
 
-Testing Logs from the serial terminal, including screenshots or logs of successful loopback communication.
+```
+cd VSDSquadron_FM/uart_loopback
+```
 
-This completes the documentation for the UART loopback mechanism on the VSDSquadron FPGA Mini.
+🔹 Build the Design
+
+```
+make build
+```
+
+🔹 Flash the FPGA Board (Run with sudo)
+
+```
+sudo make flash
+```
 
 
+✔️ Congratulations! You have successfully programmed your VSDSquadron FPGA for UART loopback testing! 🚀
+  </details>
 
+ ## Step 4 Testing and Verification
+  <details>
+       <summary><STRONG> Testing and Verification</STRONG></summary>
+
+### 🖥️ Setting Up Docklight for UART Loopback Testing
+
+**📥 Download & Install Docklight**
+
+To test the UART loopback, we will be using Docklight, a serial communication software. You can download it from the [Docklight website](https://docklight.de/downloads/)
+***
+**🔌 Connecting & Configuring Docklight**
+
+1️⃣ Open Docklight
+
+2️⃣ Verify the Communication Port
+
+**Ensure your system (not the VM) is connected to the correct COM port.*
+
+**Default is COM1, but in my case, it was COM7.*
+
+**If incorrect, change it by navigating to:*
+
+```
+Tools > Project Settings
+```
+
+3️⃣ Set the Baud Rate
+
+**Speed: 9600**
+***
+**✉️ Sending & Receiving Data**
+
+**🔹 Create a Send Sequence:**
+
+1️⃣ Double-click on the small blue box under the "Name" column in the Send Sequences panel.
+
+2️⃣ Enter the following details:
+
+- 🏷️ Name: (Any descriptive label for your message)
+- 🔣 Format: (Choose an appropriate data format)
+- ✍️ Message: (Enter the message you want to send)
+
+3️⃣ Click "Apply" and verify that your message appears under Send Sequences.
+
+🔹 Transmit the Message:
+
+1️⃣ Click the ➡️ (arrow) beside the name to send the message.
+
+2️⃣ Verify the Response in the Receive Window.
+
+**✅ If successful, the received message should match the sent message!**
+***
+✔️ Congratulations! You have successfully programmed your VSDSquadron FPGA for UART loopback testing! 🚀
+</details>
+
+## Step 3 Final Documentation
+    
+<details>      
+    <summary><STRONG>Block and Circuit diagram</STRONG></summary>
+<details>
+     <summary><STRONG> Block diagram illustrating the UART loopback architecture</STRONG></summary
+                                                                                           
+![image](https://github.com/user-attachments/assets/36fe2f6a-95c5-4d34-b74c-1568dbffcdf5)
+  </details>
+  <details>
+     <summary><STRONG> Detailed circuit diagram showing connections between the FPGA and any peripheral devices used</STRONG></summary> 
+    
+![image](https://github.com/user-attachments/assets/eaff15eb-6a90-42c3-a44e-727a38fbbf84)
+  </details>
+  </details>
