@@ -1,4 +1,4 @@
-#VSDSquadron-FM-research-internship-by-Abhimanyu-FPGA-MINI
+# VSDSquadron-FM-research-internship-by-Abhimanyu-FPGA-MINI
 The VSDSquadron FPGA Mini (FM) is a compact and low-cost development board designed for FPGA prototyping and embedded system projects. This board provides a seamless hardware development experience with an integrated programmer, versatile GPIO access, and onboard memory, making it ideal for students, hobbyists, and developers exploring FPGA-based designs. [(Source)](https://www.vlsisystemdesign.com/vsdsquadronfm/)
 ## Task 2 Implementing a UART loopback
 ### Step 1: Understanding the Verilog code
