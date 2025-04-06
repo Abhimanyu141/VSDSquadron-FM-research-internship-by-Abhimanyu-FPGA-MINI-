@@ -1,4 +1,4 @@
-UART Transmitter Module Documentation
+UART Transmitter Module Documentation 
 This documentation outlines the design, implementation, testing, and verification of a UART transmitter module developed for FPGA communication with an external device.
 
 1. Introduction
