@@ -217,7 +217,7 @@ Tools > Project Settings
 ✔️ Congratulations! You have successfully programmed your VSDSquadron FPGA for UART loopback testing! 🚀
 </details>
 
-## Step 3 Final Documentation
+## Step 5 Final Documentation
     
 <details>      
     <summary><STRONG>Block and Circuit diagram</STRONG></summary>
