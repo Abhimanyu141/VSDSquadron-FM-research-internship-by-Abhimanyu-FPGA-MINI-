@@ -539,4 +539,22 @@ Launches a terminal window (e.g., using screen or minicom) at 9600 baud to monit
 # Video Output
 
 https://github.com/user-attachments/assets/5a92950a-49de-4bc7-b689-9e6aeaa5128a
+# Conclusion
+This project successfully implements a real-time sensor interface using FPGA:\
 
+Periodic distance measurement with HC-SR04
+
+
+Real-time echo counting and distance calculation
+
+
+ASCII-based serial communication at 9600 baud
+
+
+Optional local display using RGB LEDs
+
+
+The design provides a foundation that can be expanded with additional sensor types, error correction, or enhanced UART configurations.
+
+# Acknowledgements 
+Kunal Ghosh, Co-founder, VSD Corp. Pvt. Ltd. Nickson P Jose, Physical Design Engineer, Intel Corporation.
