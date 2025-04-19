@@ -8,206 +8,494 @@ Professor Himanshu Rai, International Institute of Information Technology, Banga
 Mr. Sudarshan R, National Institute of Advanced Studies (NIAS)
 📚 Resources
 VSDSquadron FPGA Mini (FM)
+<details>
+  <summary><STRONG> Task 1</STRONG></summary>
 
-⚡ About FPGA Board
-FPGA Mini FPGA Mini
+  # VSDSquadron-FM-research-internship-by-Abhimanyu-FPGA-MINI-
+The VSDSquadron FPGA Mini (FM) is a compact and low-cost development board designed for FPGA prototyping and embedded system projects. This board provides a seamless hardware development experience with an integrated programmer, versatile GPIO access, and onboard memory, making it ideal for students, hobbyists, and developers exploring FPGA-based designs. [(Source)](https://www.vlsisystemdesign.com/vsdsquadronfm/)
+## Task 1 Understanding and Implementing the Verilog Code on the VSDSquadron FPGA Mini Board
+### Step 1: Understanding the Verilog code
+The Verilog code can be accessed from here [Verilog code](https://github.com/Arihaansingh/VSDSquadron_fpga_mini-FM-Internship_By-Arihaan_singh/blob/main/Task%201/VSDFM_top_module.v) This Verilog module controls an RGB LED using an internal oscillator and a counter, with a test signal for monitoring and predefined brightness settings for the LEDs.
 
-The VSDSquadron FPGA Mini (FM) is a compact and low-cost development board designed for FPGA prototyping and embedded system projects. This board provides a seamless hardware development experience with an integrated programmer, versatile GPIO access, and onboard memory, making it ideal for students, hobbyists, and developers exploring FPGA-based designs.
+<details>
+  <summary><STRONG> Verilog module overview</STRONG></summary>
 
-The VSDSquadron FM board - Features and specifications:
+### Port Analysis:
 
-� FPGA:
-– Powered by the Lattice UltraPlus ICE40UP5K FPGA
+```verilog
+module top (
+    // outputs
+    output wire led_red,   // Red
+    output wire led_blue,  // Blue
+    output wire led_green, // Green
+    input wire hw_clk,     // Hardware Oscillator, not the internal oscillator
+    output wire testwire
+);
+```
+**This is the first part of the code which tells about the ports:**
 
-– Offers 5.3K LUTs, 1Mb SPRAM, 120Kb DPRAM, and 8 multipliers for versatile design capabilities
+`led_red`, `led_blue`, `led_green` **(Outputs):** These ports are intended to control the red, blue, and green components of an RGB LED, respectively. By driving these outputs high or low, the module can manipulate the color and intensity of the LED.
 
-� Connectivity:
-– Equipped with an FTDI FT232H USB to SPI device for seamless communication
+`hw_clk` **(Input):** This is the hardware oscillator clock input. Although the module utilizes an internal oscillator `(int_osc)` for its operations, it has the clock signal which drives the module signals.
 
-– All FTDI pins are accessible through test points for easy debugging and customization
+`testwire` **(Output):** This port is connected to the 5 bit of the `frequency_counter_i` register `(frequency_counter_i[5])`. It serves as a test signal, potentially useful for debugging or monitoring the internal state of the frequency counter.
 
-� General Purpose I/O (GPIO):
-– All 32 FPGA GPIOs brought out for easy prototyping and interfacing
+### Internal Component Analysis
+The module consists of three main internal components, each serving a distinct function:
 
-� Memory:
-– Integrated 4MB SPI flash for data storage and configuration
+#### 1. Internal Oscillator (SB_HFOSC)
+The internal oscillator generates a stable clock signal required for timing operations. It is configured with a clock division value of `0b10`, which corresponds to binary 2.
 
-� LED Indicators:
-– RGB LED included for status indication or user-defined functionality
+**Power and Enable Signals:**
 
-� Form Factor:
-– Compact design with all pins accessible, perfect for fast prototyping and embedded applications
+`CLKHFPU = 1'b1`: Powers up the oscillator.
+`CLKHFEN = 1'b1`: Enables the oscillator.
 
-Block Diagram
+**Output Signal:**
 
-image
+`CLKHF`: This is the oscillator's output, connected to the internal signal `int_osc`, which drives the frequency counter and other timing-dependent operations.
+#### 2. Frequency Counter Logic
+This module includes a **28-bit counter**, named `frequency_counter_i`, which increments on every rising edge of `int_osc`.
 
-Board Overview
+**Functionality:**
+- The counter continuously increases its value, providing a timing reference within the module.
+- Bit 5 of this counter is specifically connected to `testwire`, allowing external monitoring of the frequency.
+- This setup helps verify the oscillator's operation and timing accuracy.
 
-image
+#### 3. RGB LED Driver (SB_RGBA_DRV)
+The module includes an RGB LED driver that controls the brightness and color of the LED.
 
-ICE40UP5K-SG48ITR Specification
-Feature	Specification
-Technology Node	40 nm
-Logic Cells	5,280
-Flip-Flops	4,960
-SRAM Blocks	120 kbits
-DSP Blocks	None
-Package Type	SG48
-I/O Pins	39
-I/O Standards Supported	LVCMOS, LVDS
-Max Operating Frequency	133 MHz
-Clock Sources	Internal oscillator & external clock
-Core Voltage	1.2V
-I/O Voltage	3.3V, 2.5V, 1.8V
-Operating Temperature	-40°C to 85°C
-Development Tools	Project Icestorm, Yosys, NextPNR
-UART Transmitter Module for FPGA - Overview
-Project Summary
-The UART Transmitter Module for FPGA is designed to enable serial communication between an FPGA and an external UART-compatible device (e.g., a PC, microcontroller, or another FPGA). This module will allow the FPGA to send data over a single wire (TX) to the external device using the Universal Asynchronous Receiver-Transmitter (UART) protocol. The goal of this project is to develop a fully functioning UART transmitter, integrate it into the FPGA design, and verify the module's performance through practical testing.
+**Configuration and Control:**
 
-Key Tasks and Objectives
-1. Study the Existing Code
-Access the existing uart_tx project from the VSDSquadron_FM repository.
+- `RGBLEDEN = 1'b1`: Enables the LED operation.
+- `CURREN = 1'b1`: Enables current control for LED brightness.
 
-Review the Verilog code to understand the design and transmission process.
+**Color Output Settings:**
 
-2. Design Documentation
-Create a block diagram of the UART transmitter module, outlining key components such as the shift register, state machine, and baud rate generator.
+- **Red LED** (`RGB0`)**:** Set to minimum brightness (RGB0PWM = 1'b0).
 
-Design a circuit diagram illustrating how the FPGA's TX pin connects to the receiving device (e.g., PC or microcontroller).
+- **Green LED** (`RGB1`)**:** Set to minimum brightness (RGB1PWM = 1'b0).
 
-3. Implementation
-Assemble the hardware setup as per the circuit diagram, ensuring proper connections between the FPGA and external device.
+- **Blue LED** (`RGB2`)**:** Set to maximum brightness (RGB2PWM = 1'b1).
 
-Synthesize the Verilog code and program the FPGA with the UART transmitter module.
+**Current Settings:**
 
-4. Testing and Verification
-Connect the FPGA to a UART-compatible device and use a serial terminal to monitor the transmitted data.
+- Each LED is configured with minimal current (`0b000001`) to optimize power consumption.
 
-Verify that data is transmitted correctly, with accurate start bits, data bits, and stop bits.
+### Purpose 
+This Verilog module is designed to control an RGB LED while also handling internal timing functions. It includes a stable built-in clock and ensures smooth LED operation. Additionally, it features a test signal that allows monitoring of system behavior. The module is ideal for embedded applications that require precise LED control without relying on external timing components.
 
-5. Documentation
-Document the project with detailed explanations of the block and circuit diagrams, a walkthrough of the Verilog code, and testing results.
+### Description of internal logic and oscillator
+The module generates its own clock signal using a **high-frequency oscillator** (`SB_HFOSC`). This oscillator serves as the timing source for the entire system. A **28-bit counter** is connected to the oscillator’s output, which helps keep track of time and internal processes.
 
-Produce a short video demonstration showing the UART transmission in action.
+To assist with debugging and monitoring, **bit 5** of this counter is linked to the `testwire` output. This connection allows external systems to observe and verify the clock’s operation.
 
-Key Deliverables
-Verilog Code: The complete code for the UART transmitter module.
+### Functionality of the RGB LED driver and its relationship to the outputs
+The **RGB LED driver** (`SB_RGBA_DRV`) is responsible for managing the brightness and color of the LED. It operates with the following settings:
 
-Block Diagram: A visual representation of the system design.
+- Uses a **current-controlled** output to regulate brightness efficiently.
+- Each LED color (Red, Green, Blue) is controlled via **Pulse Width Modulation (PWM)**.
+- **Predefined brightness levels:**
+            - **Blue LED** is set to **maximum brightness** (`RGB2PWM = 1'b1`).
+            - **Red and Green LEDs** are set to **minimum brightness** (`RGB0PWM = 1'b0`, `RGB1PWM = 1'b0`).
 
-Circuit Diagram: A diagram detailing the FPGA TX pin connection to the receiving device.
+In short, **This Verilog module controls an RGB LED using an internal oscillator and a frequency counter while providing a test signal for monitoring.**
+</details>
 
-Testing Documentation: The results of the data transmission test, including any issues encountered and solutions implemented.
+### Step 2: Creating the PCF File
 
-Video Demonstration: A short video showing the FPGA transmitting data to the receiving device, with the data verified in a serial terminal.
+The PCF (Physical Constraints File) can be acessed here [(PCF)](https://github.com/Arihaansingh/VSDSquadron_fpga_mini-FM-Internship_By-Arihaan_singh/blob/main/Task%201/VsdFpgaMini.pcf). A PCF (Physical Constraints File) is used in FPGA design to define the mapping between logical signals in the HDL design and the physical pins of the FPGA device. It ensures that specific signals, such as clock inputs, LED outputs, or communication interfaces, are correctly assigned to the appropriate hardware pins. The PCF file consists of simple constraints using the `set_io1` command, associating signal names with pin numbers. This file plays a crucial role in ensuring proper hardware functionality, as incorrect assignments can lead to design failures or unexpected behavior
 
-Objectives
-The overall objective of this project is to design a UART transmitter on FPGA that reliably communicates with an external device. By following the steps of studying existing code, designing the system, implementing it on FPGA, and verifying the functionality, this project aims to provide a solid foundation for further UART communication developments on FPGA platforms.
+<details>
+  <summary><STRONG> PCF analysis</STRONG></summary>
+We can easily create a Physical Constraints File (PCF). We can create the Physical Constraints File (PCF) for the FPGA project using the 
+  
+[Datasheet](https://github.com/Arihaansingh/VSDSquadron_fpga_mini-FM-Internship_By-Arihaan_singh/blob/main/VSDSquadronFMDatasheet.pdf) Here's how:
+  
+1. Identify I/O Ports in Your Verilog Module: Examine your Verilog code to list all input and output ports that need to be mapped to physical pins.
 
-UART Transmitter Module - Design Documentation
-Project Overview
-This documentation provides an overview of the design phase for the UART Transmitter Module for FPGA. The goal of this task is to define and document the design of the UART transmitter, which is responsible for sending serial data from the FPGA to an external UART-compatible device. This section includes the block diagram and circuit diagram that illustrate how the UART transmitter module is structured and how it interfaces with the external device.
+2. Consult the VSDSquadronFM Datasheet: The datasheet provides detailed information about the board's pinout and functionalities. Locate the section detailing the FPGA's pin assignments to understand which physical pins correspond to specific functions.
+   ![image](https://github.com/user-attachments/assets/47e8710a-fb94-42d5-94e4-c63b50327710)
+   
+See this image of the Datasheet which tells about the pin assignments
 
-Key Components
-1. Block Diagram
-The block diagram below shows the high-level architecture of the UART transmitter module. This diagram outlines the flow of data from input to transmission and describes the major components that make up the system.
+4. Create the PCF File: Using the information from the datasheet, map each Verilog I/O port to the appropriate physical pin. For example, if your Verilog module has an output led_red and the datasheet indicates that the red LED is connected to pin 39, your PCF entry would be:
+```
+set_io  led_red	39
+```
+So for this project we have created the [(PCF)](https://github.com/Arihaansingh/VSDSquadron_fpga_mini-FM-Internship_By-Arihaan_singh/blob/main/Task%201/VsdFpgaMini.pcf).
 
-Block Diagram:
-plaintext
-Copy
-           +------------------+      +-------------------+  
-           |   Data Input     |----->| Shift Register    |  
-           +------------------+      +-------------------+  
-                                            |  
-                                            v  
-                              +------------------------+  
-                              | Baud Rate Generator    |  
-                              +------------------------+  
-                                            |  
-                                            v  
-                              +------------------------+  
-                              |    State Machine        |  
-                              +------------------------+  
-                                            |  
-                                            v  
-                              +------------------------+  
-                              |        TX Pin           |  
-                              +------------------------+  
-Components Breakdown:
-Data Input:
+![image](https://github.com/user-attachments/assets/6ec66888-4189-416a-a14e-0b1065d70a05)
 
-The source of the data to be transmitted. This could be a data register or an input from another device (e.g., UART receiver or microcontroller).
+#### More detailed explanation of each set_io command in your Physical Constraints File (PCF):
 
-Shift Register:
+##### Understanding set_io Commands in PCF
 
-A shift register is used to convert the parallel data into a serial stream for transmission. Each bit is shifted out one at a time, starting from the least significant bit (LSB).
+The set_io command is used in FPGA development to map logical signals (used in HDL code) to specific physical pins on the FPGA. This ensures that inputs and outputs in your Verilog/VHDL code are correctly connected to the corresponding hardware pins.
 
-Baud Rate Generator:
+##### Breakdown of Each set_io Command
+1. `set_io led_red 39`
+**Purpose:** This command assigns the logical signal `led_red` to pin 39 on the FPGA.
+**Functionality:** When your HDL code sets `led_red` to HIGH (1), it will turn on the red LED connected to pin 39. Similarly, setting it to LOW (0) will turn it off.
+Use Case: Typically used for LED status indicators (e.g., power, error, activity).
 
-This component generates the clock signal for transmitting data at the required baud rate. The baud rate generator divides the system clock to match the desired transmission rate (e.g., 9600 bps, 115200 bps).
+2. `set_io led_blue 40`
+**Purpose:**  Maps the `led_blue` signal to pin 40.
+**Functionality:** This allows the FPGA to control a blue LED, which will turn on/off based on the signal from the Verilog/VHDL code.
+Use Case: Used for visual indicators, such as showing different states of the system.
 
-State Machine:
+3. `set_io led_green 41`
+**Purpose:** Assigns the `led_green` signal to pin 41.
+**Functionality:** The FPGA can now control a green LED, switching it on or off as needed.
+Use Case: Often used for status LEDs, such as indicating successful operation.
 
-The state machine manages the sequence of events during transmission. It ensures that the data is transmitted in the correct order with start, data, and stop bits:
+4. `set_io hw_clk 20`
+**Purpose:** Maps `hw_clk` (hardware clock signal) to pin 20.
+**Functionality:** This allows the FPGA to receive clock inputs through pin 20, which are essential for timing operations inside the FPGA.
+Use Case: Used for timing-sensitive applications, such as counters, PWM signals, or high-speed data processing.
 
-Start Bit: Signals the beginning of data transmission (low).
+5. `set_io testwire 17`
+**Purpose:** Assigns `testwire` to pin 17.
+**Functionality:** This is generally used for debugging or testing, allowing a test signal to be monitored or controlled externally.
+Use Case: Can be used for temporary signal monitoring, debugging FPGA behavior, or testing different pin configurations.
 
-Data Bits: The actual data being sent.
+##### Summary
+Each `set_io` command plays a crucial role in defining FPGA pin assignments. Properly mapping logical signals to physical pins ensures correct functionality of the design and prevents errors in hardware interaction. These assignments are especially important when dealing with LEDs, clocks, and debugging signals, as they directly impact how the FPGA interacts with external components.
+</details>
 
-Stop Bit: Signals the end of data transmission (high).
+### Step 3 Integrating with the VSDSquadron FPGA Mini Board
+Integrating the VSDSquadron FPGA Mini Board involves understanding its hardware specifications, configuring the Physical Constraints File (PCF), and flashing the Verilog design onto the board. The first step is reviewing the board’s datasheet to map logical signals in the Verilog code to physical pins. Proper connections must be ensured, typically using a USB-C interface and FTDI for communication.
 
-TX Pin:
+<details>
+      <summary><STRONG>VSDSquadron FM integration</STRONG></summary>
 
-This is the FPGA’s output pin used for transmitting the serial data. The TX pin outputs the serialized data stream as per the state machine’s timing.
+#### Steps to Follow for Integrating the VSDSquadron FPGA Mini Board
+##### 1. Review the Board Datasheet
+Examine the [Datasheet](https://github.com/Arihaansingh/VSDSquadron_fpga_mini-FM-Internship_By-Arihaan_singh/blob/main/VSDSquadronFMDatasheet.pdf) to understand its features, pin configurations, and necessary connections.
+Identify the relevant pin mappings that align with the PCF file and Verilog code.
+##### 2. Establish the Physical Connections
+Use the datasheet as a reference to ensure correct pin-to-signal mapping in the PCF file.
+Properly connect the board to your computer using USB-C while ensuring the FTDI connection is intact.
+##### 3. Build and Flash the Verilog Code
+Follow the [Makefile](https://github.com/Arihaansingh/VSDSquadron_fpga_mini-FM-Internship_By-Arihaan_singh/blob/main/Task%201/Makefile) instructions to compile and upload the design onto the FPGA:
 
-2. Circuit Diagram
-The circuit diagram outlines how the FPGA's UART TX pin connects to the receiving UART-compatible device, such as a PC, microcontroller, or another FPGA.
+**Clean Previous Builds:**
+```
+make clean
+```
+![image](https://github.com/user-attachments/assets/f04a46d0-f8ac-4110-8a3b-0ab6d49c6728)
 
-Circuit Diagram:
-plaintext
-Copy
-+--------------------+      +-----------------------+  
-| FPGA TX Pin (GPIO) |----->| UART Receiver (RX Pin) |  
-+--------------------+      +-----------------------+  
-      |                             |  
-      |                             |  
-      |                           GND  
-      |  
-   VCC (3.3V or 5V, depending on FPGA)
-Key Connections:
-TX Pin (FPGA):
+This removes any existing compiled files to avoid conflicts.
 
-This is the output pin from the FPGA that transmits data. It is connected to the RX pin of the external receiving device.
+**Compile the Design:**
+```
+make build
+```
+![image](https://github.com/user-attachments/assets/ae92a8c9-e01b-43b8-b764-aff532544da7)
 
-RX Pin (Receiver):
+This step synthesizes and prepares the Verilog design for programming.
 
-The receiving device’s input pin, which will receive the serialized data sent from the FPGA.
+**Flash the FPGA Board:**
+```
+sudo make flash
+```
+![image](https://github.com/user-attachments/assets/6e29b8b7-4194-460d-beba-092d80987b3f)
 
-Ground (GND):
+This uploads the bitstream to the FPGA.
 
-A common ground connection is necessary to ensure both the FPGA and the receiving device operate with a shared reference voltage.
+##### 4. Verify the Board’s Behavior
+After flashing, observe the RGB LED on the FPGA board.
 
-VCC:
 
-The voltage supply (either 3.3V or 5V, depending on the FPGA and the receiving device). If the FPGA and the receiving device use different voltage levels, a level shifter may be needed to match the voltage levels of the TX and RX lines.
+[Video](https://github.com/user-attachments/assets/f6b9ed3f-f884-4059-9814-a0b347917e50)
 
-Design Considerations
-1. Transmission Timing and Baud Rate
-The baud rate must be correctly configured to match the transmission rate between the FPGA and the receiving device (e.g., 9600 bps, 115200 bps). The baud rate generator uses a clock divider to generate the necessary timing.
 
-2. State Machine Design
-The state machine ensures proper sequencing of the start bit, data bits, and stop bit. It needs to be robust and reliable to avoid transmission errors, such as misaligned data.
+The LED should blink, confirming a successful upload and execution of the Verilog design.
 
-3. Shift Register for Serializing Data
-The shift register converts parallel data into serial form for transmission. It works by shifting bits from the least significant bit (LSB) to the most significant bit (MSB) before sending them over the TX pin.
+*Figure: Board after 'make clean' process*
 
-4. Signal Integrity
-Proper care should be taken in the design of the PCB or the wiring between the FPGA and the receiving device to avoid signal degradation or noise, especially at higher baud rates.
+![image](https://github.com/user-attachments/assets/edb4d36d-8c6a-4e28-bddf-f5a7a6436570)
 
-Conclusion
-The UART transmitter module consists of key components: a data input, shift register, baud rate generator, state machine, and TX pin. The block and circuit diagrams provide a high-level understanding of the design and how the FPGA interfaces with the receiving device. This modular design ensures that data is transmitted reliably using the UART protocol, and the system is flexible enough to work with different external devices.
+</details>
 
+### Step 4: Final documentation
+<details>
+      <summary><STRONG>Final Documentation</STRONG></summary>
+
+#### Summary of Verilog Code Functionality
+This Verilog module is designed to control an RGB LED using an internal high-frequency oscillator (SB_HFOSC) and a 28-bit frequency counter. The module routes bit 5 of the counter to a testwire for monitoring purposes. The SB_RGBA_DRV driver handles current-controlled PWM outputs, setting the blue LED at maximum brightness while keeping the red and green LEDs at minimum. This configuration ensures stable LED operation with minimal external dependencies, making it well-suited for embedded systems.
+
+#### Pin Mapping Details (PCF File)
+The Physical Constraints File  [(PCF)](https://github.com/Arihaansingh/VSDSquadron_fpga_mini-FM-Internship_By-Arihaan_singh/blob/main/Task%201/VsdFpgaMini.pcf) maps FPGA logical signals to their respective hardware pins as follows:
+```
+Red LED → Pin 39
+Blue LED → Pin 40
+Green LED → Pin 41
+Clock Signal → Pin 20
+Testwire → Pin 17
+```
+   ![image](https://github.com/user-attachments/assets/47e8710a-fb94-42d5-94e4-c63b50327710)
+   
+This mapping aligns with the VSDSquadron FPGA Mini board datasheet, ensuring correct functionality.
+
+#### Understanding and Implementing the Verilog Code
+- Set Up the Development Environment
+- Ensure that the PCF file mappings match the physical connections on the FPGA board.
+- Connect the board to the computer using USB-C, ensuring proper FTDI communication.
+- Compile and Flash the Verilog Code
+
+**Run the following commands in the project directory:**
+```
+make clean   # Clears previous builds
+make build   # Compiles the design
+sudo make flash   # Programs the FPGA board
+```
+#### Verify LED Behavior
+
+Once programmed, the RGB LED should start blinking.
+This confirms that the FPGA has been successfully programmed.
+
+#### Problems faced
+
+![image](https://github.com/user-attachments/assets/109ce2af-fa2d-45d1-a89b-fa0350d4b263)
+<details>
+<summary><STRONG> Task 2</STRONG></summary>
+  
+# VSDSquadron-FM-research-internship-by-Abhimanyu-FPGA-MINI
+The VSDSquadron FPGA Mini (FM) is a compact and low-cost development board designed for FPGA prototyping and embedded system projects. This board provides a seamless hardware development experience with an integrated programmer, versatile GPIO access, and onboard memory, making it ideal for students, hobbyists, and developers exploring FPGA-based designs. [(Source)](https://www.vlsisystemdesign.com/vsdsquadronfm/)
+## Task 2 Implementing a UART loopback
+### Step 1: Understanding the Verilog code
+### UART Loopback Overview
+**UART (Universal Asynchronous Receiver-Transmitter)** is a hardware communication protocol used for serial communication between devices. It operates using two primary data lines:
+
+- **TX (Transmit) pin** – Sends data
+- **RX (Receive) pin** – Receives data
+
+A UART loopback mechanism is a test mode where transmitted data (TX) is directly fed back into the receive line (RX) of the same module. This allows verification of UART functionality without requiring an external device.
+
+🔗 [View the existing code here](https://github.com/Arihaansingh/VSDSquadron_fpga_mini-FM-Internship_By-Arihaan_singh/blob/main/Task%202/uart_trx.v)
+
+<details>
+  <summary><STRONG> Verilog module overview</STRONG></summary>
+
+### Analysis:
+
+### 🚀 Module Breakdown
+This module is designed to implement a UART loopback mechanism while also controlling an RGB LED based on the received data.
+
+### ⚙️ Main Components
+#### 🟢 Clock System
+
+- Uses an Internal Oscillator (`SB_HFOSC`) to generate a clock signal.
+
+- Configured with `CLKHF_DIV = "0b10"` to divide the frequency.
+
+- Provides a timing reference for all operations.
+
+#### 🔴 UART Loopback Communication
+
+- TX (Transmit) and RX (Receive) pins are directly connected within the module.
+
+- Any data sent to `uarttx` is immediately received at `uartrx`.
+
+- This feature is useful for self-testing UART functionality without needing another device.
+
+#### 🔵 Frequency Counter
+
+- A 28-bit counter (`frequency_counter_i`) tracks oscillator cycles.
+
+- It increases on each positive edge of the clock signal.
+
+- Helps generate timing signals for internal operations.
+
+#### 🟡 RGB LED Driver (SB_RGBA_DRV)
+
+- Controls three LEDs: Red (`led_red`), Green (`led_green`), and Blue (`led_blue`).
+
+- Uses PWM (Pulse Width Modulation) to adjust brightness levels.
+
+- UART data is directly mapped to LED brightness, allowing for visual feedback.
+
+### 🔁 How It Works
+#### ✅ Receiving UART Data
+
+- Data arrives at the `uartrx` pin.
+
+- The same data is looped back to `uarttx` and sent out again.
+
+- This confirms that UART transmission and reception are functioning correctly.
+
+#### ✅ LED Control Based on UART Data
+
+- The received data is used to control the intensity of the RGB LEDs.
+
+- PWM signals regulate LED brightness based on input values.
+
+- All three LEDs change intensity together based on UART input.
+
+#### ✅ Clock & Timing Management
+
+- The internal oscillator ensures stable timing.
+
+- The frequency counter generates signals for PWM and UART operations.
+
+  **This system efficiently tests UART communication while providing real-time LED feedback. 🌟**
+  </details>
+  
+  ## Step 2 Design documentetion
+    <details>
+       <summary><STRONG> Analysis</STRONG></summary>
+    <details>
+     <summary><STRONG> Block diagram illustrating the UART loopback architecture</STRONG></summary>
+![image](https://github.com/user-attachments/assets/36fe2f6a-95c5-4d34-b74c-1568dbffcdf5)
+  </details>
+  <details>
+     <summary><STRONG> Detailed circuit diagram showing connections between the FPGA and any peripheral devices used</STRONG></summary> 
+    
+![image](https://github.com/user-attachments/assets/eaff15eb-6a90-42c3-a44e-727a38fbbf84)
+  </details>
+  </details>
+
+ ## Step 3 Implementation
+  <details>
+       <summary><STRONG> Transmitting code to FPGA Board</STRONG></summary>
+    
+### 🚀 UART Loopback on VSDSquadron FPGA
+
+**📁 Setting Up the Project**
+
+1. Create the following files inside a new folder under VSDSquadron_FM. In this case, the folder is named uart_loopback:
+
+📜 Files to Create:
+
+- 🛠️ Makefile
+- 💾 uart_trx- Verilog
+- 🏗️ Verilog file
+- 📌 pcf (Pin Constraint File)
+- 📌top module
+
+📌 Folder Structure:
+
+```
+VSDSquadron_FM/
+ ├── uart_loopback/
+ │   ├── Makefile
+ │   ├── uart_trx.v
+ │   ├── top.v
+ │   ├── uart_loopback.pcf
+```
+
+### 🔌 Connecting the FPGA Board
+
+1️⃣ Plug in the FPGA Board to your system via USB-C.
+
+2️⃣ Verify the Connection by running:
+
+```
+lsusb
+```
+
+💡 If the board is detected, you should see:
+
+```
+Future Technology Devices International
+```
+
+### 🛠️ Building & Flashing the Code
+
+🔹 Navigate to the Folder
+
+```
+cd VSDSquadron_FM/uart_loopback
+```
+
+🔹 Build the Design
+
+```
+make build
+```
+
+🔹 Flash the FPGA Board (Run with sudo)
+
+```
+sudo make flash
+```
+
+
+✔️ Congratulations! You have successfully programmed your VSDSquadron FPGA for UART loopback testing! 🚀
+  </details>
+
+ ## Step 4 Testing and Verification
+  <details>
+       <summary><STRONG> Testing and Verification</STRONG></summary>
+
+### 🖥️ Setting Up Docklight for UART Loopback Testing
+
+**📥 Download & Install Docklight**
+
+To test the UART loopback, we will be using Docklight, a serial communication software. You can download it from the [Docklight website](https://docklight.de/downloads/)
+***
+**🔌 Connecting & Configuring Docklight**
+
+1️⃣ Open Docklight
+
+2️⃣ Verify the Communication Port
+
+**Ensure your system (not the VM) is connected to the correct COM port.*
+
+**Default is COM1, but in my case, it was COM7.*
+
+**If incorrect, change it by navigating to:*
+
+```
+Tools > Project Settings
+```
+
+3️⃣ Set the Baud Rate
+
+**Speed: 9600**
+***
+**✉️ Sending & Receiving Data**
+
+**🔹 Create a Send Sequence:**
+
+1️⃣ Double-click on the small blue box under the "Name" column in the Send Sequences panel.
+
+2️⃣ Enter the following details:
+
+- 🏷️ Name: (Any descriptive label for your message)
+- 🔣 Format: (Choose an appropriate data format)
+- ✍️ Message: (Enter the message you want to send)
+
+3️⃣ Click "Apply" and verify that your message appears under Send Sequences.
+
+🔹 Transmit the Message:
+
+1️⃣ Click the ➡️ (arrow) beside the name to send the message.
+
+2️⃣ Verify the Response in the Receive Window.
+
+**✅ If successful, the received message should match the sent message!**
+***
+✔️ Congratulations! You have successfully programmed your VSDSquadron FPGA for UART loopback testing! 🚀
+</details>
+
+## Step 5 Final Documentation
+    
+<details>      
+    <summary><STRONG>Block and Circuit diagram</STRONG></summary>
+<details>
+     <summary><STRONG> Block diagram illustrating the UART loopback architecture</STRONG></summary
+                                                                                           
+![image](https://github.com/user-attachments/assets/36fe2f6a-95c5-4d34-b74c-1568dbffcdf5)
+  </details>
+  <details>
+     <summary><STRONG> Detailed circuit diagram showing connections between the FPGA and any peripheral devices used</STRONG></summary> 
+    
+![image](https://github.com/user-attachments/assets/eaff15eb-6a90-42c3-a44e-727a38fbbf84)
+  </details>
+  </details>
+## 5.Demo video
+[Demo Video] (https://github.com/user-attachments/assets/370e20cc-b9b6-417b-b359-ec561e7105f0)
 
 
