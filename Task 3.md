@@ -1,4 +1,7 @@
-### UART Transmit Module
+# VSDSquadron-FM-research-internship-by-Abhimanyu-FPGA-MINI
+The VSDSquadron FPGA Mini (FM) is a compact and low-cost development board designed for FPGA prototyping and embedded system projects. This board provides a seamless hardware development experience with an integrated programmer, versatile GPIO access, and onboard memory, making it ideal for students, hobbyists, and developers exploring FPGA-based designs. [(Source)](https://www.vlsisystemdesign.com/vsdsquadronfm/)
+
+### Task 3 UART Transmit Module
 
 ## Overview
 This module implements an **8N1 UART Transmitter**, enabling serial data transmission using an **8-bit data frame, no parity bit, and 1 stop bit**. It generates a **9600 baud clock** from a 12 MHz oscillator and provides a simple state-machine-based transmission mechanism.The code for this module can accessed [here](https://github.com/Skandakm29/Vsd_squadron_mini_Fpga_3/blob/main/uart_trx.v).
