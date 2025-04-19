@@ -1,5 +1,5 @@
    # PROJECT - Real time Sensor Data Acquisition and Transmission System:
-## Introduction
+## Introduction 
 This report presents a complete design for a real-time sensor-based measurement and communication system using an FPGA. The system measures distance using the HC-SR04 ultrasonic sensor, 
 
 processes the signal on the FPGA board, and transmits the result to a computer through UART. Included are system details, schematics, annotated Verilog modules, testing procedures, and
